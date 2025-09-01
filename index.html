@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>반려동물 양육 가구 비율 시각화</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+<div class="container">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">반려동물 양육 가구 비율 시각화</h1>
+    <p class="text-center text-gray-600 mb-8">
+        대한민국 및 순천시의 반려동물 양육 비율을 비교한 그래프입니다.
+    </p>
+    <div class="chart-container">
+        <canvas id="petChart"></canvas>
+    </div>
+    <div class="mt-8 text-sm text-gray-500">
+        <h3 class="font-bold">참고 자료</h3>
+        <ul class="list-disc list-inside mt-2 space-y-1">
+            <li><strong>대한민국 전체:</strong> 2024년 농림축산식품부 조사 기준 28.6%입니다.</li>
+            <li><strong>순천시:</strong> 2024년 순천시 자료를 기반으로 4가구 중 1가구(약 25%)로 추정됩니다.</li>
+            <li><strong>전라남도:</strong> 전라남도 전체에 대한 공식적인 통계는 아직 공개되지 않았습니다.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // 차트 데이터
+    const data = {
+        labels: ['대한민국 전체', '전라남도 순천시'],
+        datasets: [{
+            label: '반려동물 양육 가구 비율',
+            data: [28.6, 25.0],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)'
+            ],
+            borderColor: [
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)'
+            ],
+            borderWidth: 1,
+            borderRadius: 10,
+        }]
+    };
+
+    // 차트 옵션
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 35, // 비율 최대값 설정
+                title: {
+                    display: true,
+                    text: '비율 (%)',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.dataset.label + ': ' + context.raw + '%';
+                    }
+                }
+            },
+            datalabels: { // Chart.js Datalabels Plugin을 사용하지 않으므로 주석 처리
+                display: false
+            }
+        },
+        animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
+        }
+    };
+
+    // 차트 생성
+    window.onload = function() {
+        const ctx = document.getElementById('petChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    };
+</script>
+
+</body>
+</html>
