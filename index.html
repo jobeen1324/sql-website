@@ -3,124 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>반려동물 양육 가구 비율 시각화</title>
+    <title>순천시 병원 현황 분석</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            background-color: #f0f4f8;
         }
         .container {
-            max-width: 800px;
-            margin: 2rem auto;
+            max-width: 1200px;
+            margin: auto;
             padding: 2rem;
-            background-color: #ffffff;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
-        .chart-container {
-            position: relative;
-            height: 400px;
-            width: 100%;
+        .section-title {
+            text-align: center;
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+        .section-subtitle {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 2.5rem;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 768px) {
+            .chart-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .chart-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .chart-card:hover {
+            transform: translateY(-5px);
+        }
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .tooltip {
+            position: absolute;
+            background-color: #1a202c;
+            color: #ffffff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .bar {
+            fill: #4c51bf;
+            transition: fill 0.3s ease;
+        }
+        .bar:hover {
+            fill: #667eea;
+        }
+        .pie-slice {
+            transition: opacity 0.3s ease;
+        }
+        .pie-slice:hover {
+            opacity: 0.8;
+        }
+        .analysis-section {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        .analysis-section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .analysis-text {
+            color: #4a5568;
+            line-height: 1.75;
+            text-indent: 1.5rem;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 p-8">
+    <div class="container">
+        <header class="text-center mb-12">
+            <h1 class="section-title">순천시 병원 현황 분석</h1>
+            <p class="section-subtitle">데이터 기반으로 본 순천시의 의료 인프라 현주소</p>
+        </header>
 
-<div class="container">
-    <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">반려동물 양육 가구 비율 시각화</h1>
-    <p class="text-center text-gray-600 mb-8">
-        대한민국 및 순천시의 반려동물 양육 비율을 비교한 그래프입니다.
-    </p>
-    <div class="chart-container">
-        <canvas id="petChart"></canvas>
+        <main>
+            <div class="chart-grid">
+                <!-- 병원 종류별 분포 차트 -->
+                <div class="chart-card">
+                    <h2 class="chart-title">병원 종류별 분포 현황</h2>
+                    <div id="type-chart" class="h-64 md:h-80"></div>
+                </div>
+
+                <!-- 지역별 병원 분포 차트 -->
+                <div class="chart-card">
+                    <h2 class="chart-title">지역별 병원 수 분포</h2>
+                    <div id="location-chart" class="h-64 md:h-80"></div>
+                </div>
+            </div>
+
+            <!-- 국립의대 및 대학병원 설립 필요성 섹션 -->
+            <section class="analysis-section">
+                <h2 class="analysis-section-title">순천 국립의대 및 대학병원 설립, 왜 필요한가?</h2>
+                <div class="space-y-4">
+                    <p class="analysis-text">
+                        제공된 데이터에 따르면 순천시에는 의원, 치과의원, 한의원 등 1차 의료기관이 다수 존재하지만, 중증 질환을 전문적으로 다룰 수 있는 상급 종합병원급 의료기관은 부족한 현실입니다. 이는 곧 지역민들이 고난도 수술이나 복합적인 치료가 필요할 때마다 광주나 서울 등 타 지역으로 원정 진료를 떠나야 하는 불편을 초래합니다. 특히 응급 상황에서는 생명과 직결되는 심각한 문제로 이어질 수 있습니다.
+                    </p>
+                    <p class="analysis-text">
+                        국립의과대학 및 대학병원이 순천에 설립되면, 이러한 의료 불균형 문제를 해소하고 시민들의 의료 접근성을 크게 향상시킬 수 있습니다. 전문 의료 인력과 최신 의료 장비를 확보하여 응급 및 중증 환자에게 신속하고 질 높은 의료 서비스를 제공하게 될 것입니다. 이는 단순히 의료 혜택 증진을 넘어, 순천 시민들의 생명과 건강을 보호하는 가장 기본적인 인프라가 될 것입니다.
+                    </p>
+                    <p class="analysis-text">
+                        또한, 대학병원은 단순히 환자를 치료하는 기관을 넘어섭니다. 새로운 일자리를 창출하고, 의료 관련 산업을 육성하며, 유능한 의료 인력을 양성하는 교육과 연구의 중심지가 됩니다. 이는 순천시가 전남 동부권의 의료 허브로 성장하고, 지속 가능한 지역 발전을 이끌어가는 데 필수적인 동력이 될 것입니다.
+                    </p>
+                </div>
+            </section>
+        </main>
     </div>
-    <div class="mt-8 text-sm text-gray-500">
-        <h3 class="font-bold">참고 자료</h3>
-        <ul class="list-disc list-inside mt-2 space-y-1">
-            <li><strong>대한민국 전체:</strong> 2024년 농림축산식품부 조사 기준 28.6%입니다.</li>
-            <li><strong>순천시:</strong> 2024년 순천시 자료를 기반으로 4가구 중 1가구(약 25%)로 추정됩니다.</li>
-            <li><strong>전라남도:</strong> 전라남도 전체에 대한 공식적인 통계는 아직 공개되지 않았습니다.</li>
-        </ul>
-    </div>
-</div>
 
-<script>
-    // 차트 데이터
-    const data = {
-        labels: ['대한민국 전체', '전라남도 순천시'],
-        datasets: [{
-            label: '반려동물 양육 가구 비율',
-            data: [28.6, 25.0],
-            backgroundColor: [
-                'rgba(75, 192, 192, 0.6)',
-                'rgba(153, 102, 255, 0.6)'
-            ],
-            borderColor: [
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)'
-            ],
-            borderWidth: 1,
-            borderRadius: 10,
-        }]
-    };
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 사용자로부터 제공된 CSV 데이터를 여기에 붙여넣습니다.
+            const uploadedData = `
+구분,의료기관명,의료기관주소(도로명),의료기관전화번호
+한의원,담뜰한의원,"전라남도 순천시 왕지로 36, 2층 203호 (왕지동)",061-762-7577
+한의원,하얀미한의원,"전라남도 순천시 왕지4길 9-12, 2층 (왕지동)",
+한의원,송인한의원,"전라남도 순천시 중앙로 75, 1층 (저전동)",061-753-2735
+한의원,홍대영한의원,"전라남도 순천시 중앙로 146-1, 1층 (매곡동)",061-751-1075
+한의원,지리산쌍계한의원,"전라남도 순천시 왕지2길 13-7, 2층 (왕지동)",061-721-0012
+한의원,아이누리한의원,"전라남도 순천시 해룡면 매안로 145, 2층 202호",061-723-0275
+한의원,산들한의원,"전라남도 순천시 삼산로 101, 2층 203호 (용당동, 주상복합)",061-753-3701
+한의원,웃장부부한의원,"전라남도 순천시 중앙로 156-1, 2층 (매곡동)",061-752-1275
+한의원,조은마디한의원,"전라남도 순천시 연향동 1642-13, 2층",061-725-7577
+한의원,순천다움한의원,"전라남도 순천시 조례못등길 15, 2층 (조례동)",061-744-8877
+한의원,순천김수한의원,"전라남도 순천시 연향번영길 103, 2층 (연향동)",061-721-7275
+한의원,조례생명마루한의원,"전라남도 순천시 조례1길 13-11, 2층 (조례동)",061-727-7575
+치과의원,이사랑치과의원,"전라남도 순천시 해룡면 장선배기길 272, 부영6차가동 2층 3,4호",061-725-2804
+치과의원,프롬치과의원,"전라남도 순천시 왕궁길 47, 2층 (조례동)",061-725-2775
+치과의원,순천수치과의원,"전라남도 순천시 중앙로 353, 2층 (가곡동)",061-752-6511
+치과의원,박석환치과의원,"전라남도 순천시 해룡면 장선배기길 284, 청솔@상가동 201호",061-725-2882
+치과의원,라임치과의원,"전라남도 순천시 이수로 321, 4층 (조례동)",061-721-2804
+치과의원,스마일치과의원,"전라남도 순천시 해룡면 기적의도서관길 90, 2층 212호 (부영3차아파트)",061-724-2828
+치과의원,누가치과의원,"전라남도 순천시 중앙로 74 (장천동)",061-744-9972
+치과의원,김영길치과의원,"전라남도 순천시 비봉1길 12 (장천동)",061-743-2875
+치과의원,성심치과의원,"전라남도 순천시 백강로 115 (조례동)",061-721-8888
+치과의원,아이튼튼치과의원,"전라남도 순천시 조례못등길 20, 3층 (조례동)",061-722-2875
+의원,더본의원,"전라남도 순천시 해룡면 가산길 103, 2층 (복성리)",061-724-4444
+의원,장안의원,"전라남도 순천시 해룡면 매안로 170, 1층",061-722-1010
+의원,새미래의원,"전라남도 순천시 해룡면 매안로 145, 102호 (신대리, 로얄부영3차아파트)",061-726-2611
+의원,더베스트의원,"전라남도 순천시 하이텍산단2길 20 (해룡면)",061-722-8275
+`;
 
-    // 차트 옵션
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 35, // 비율 최대값 설정
-                title: {
-                    display: true,
-                    text: '비율 (%)',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
+            const parseData = (csv) => {
+                const lines = csv.trim().split('\n');
+                const headers = lines[0].split(',').map(h => h.trim());
+                const data = lines.slice(1).map(line => {
+                    const values = line.match(/(?:[^,"]+|"[^"]*")+/g).map(v => v.replace(/^"|"$/g, '').trim());
+                    return headers.reduce((obj, header, i) => {
+                        obj[header] = values[i] || '';
+                        return obj;
+                    }, {});
+                });
+                return data;
+            };
+
+            const data = parseData(uploadedData);
+
+            // 병원 종류별 데이터 집계
+            const typeCounts = {};
+            data.forEach(d => {
+                const type = d['구분'];
+                if (type) {
+                    typeCounts[type] = (typeCounts[type] || 0) + 1;
+                }
+            });
+            const typeChartData = Object.keys(typeCounts).map(key => ({
+                type: key,
+                count: typeCounts[key]
+            }));
+
+            // 지역별 데이터 집계 (읍/면/동 단위)
+            const locationCounts = {};
+            data.forEach(d => {
+                const address = d['의료기관주소(도로명)'];
+                if (address) {
+                    const match = address.match(/\(?(.*[동읍면])\)?$/);
+                    if (match && match[1]) {
+                        const location = match[1].replace(/시/g, '').trim(); // '순천시'와 같은 부분 제거
+                        locationCounts[location] = (locationCounts[location] || 0) + 1;
                     }
                 }
-            },
-            x: {
-                grid: {
-                    display: false
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                display: false,
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': ' + context.raw + '%';
-                    }
-                }
-            },
-            datalabels: { // Chart.js Datalabels Plugin을 사용하지 않으므로 주석 처리
-                display: false
-            }
-        },
-        animation: {
-            duration: 1000,
-            easing: 'easeOutQuart'
-        }
-    };
+            });
+            const locationChartData = Object.keys(locationCounts).map(key => ({
+                location: key,
+                count: locationCounts[key]
+            })).sort((a, b) => b.count - a.count);
 
-    // 차트 생성
-    window.onload = function() {
-        const ctx = document.getElementById('petChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: data,
-            options: options
+            // 차트 렌더링 함수
+            const renderChart = (containerId, data, chartType, options = {}) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const margin = {top: 20, right: 20, bottom: 60, left: 40};
+                const width = container.offsetWidth - margin.left - margin.right;
+                const height = container.offsetHeight - margin.top - margin.bottom;
+
+                const svg = d3.select(container).append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                    .append('g')
+                    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+                const tooltip = d3.select('body').append('div')
+                    .attr('class', 'tooltip');
+
+                if (chartType === 'bar') {
+                    const x = d3.scaleBand()
+                        .domain(data.map(d => options.xKey ? d[options.xKey] : d.location))
+                        .range([0, width])
+                        .padding(0.2);
+
+                    const y = d3.scaleLinear()
+                        .domain([0, d3.max(data, d => d.count) + 1])
+                        .nice()
+                        .range([height, 0]);
+
+                    svg.append('g')
+                        .attr('transform', `translate(0, ${height})`)
+                        .call(d3.axisBottom(x))
+                        .selectAll('text')
+                        .attr('transform', 'rotate(-45)')
+                        .style('text-anchor', 'end')
+                        .attr('dy', '0.5em')
+                        .attr('dx', '-0.5em');
+                    
+                    svg.append('g')
+                        .call(d3.axisLeft(y).ticks(d3.max(data, d => d.count) + 1));
+
+                    svg.selectAll('.bar')
+                        .data(data)
+                        .enter().append('rect')
+                        .attr('class', 'bar')
+                        .attr('x', d => x(options.xKey ? d[options.xKey] : d.location))
+                        .attr('y', d => y(d.count))
+                        .attr('width', x.bandwidth())
+                        .attr('height', d => height - y(d.count))
+                        .on('mouseover', function(event, d) {
+                            tooltip.style('opacity', 1)
+                                .html(`<strong>${options.xKey ? d[options.xKey] : d.location}:</strong> ${d.count}개`)
+                                .style('left', (event.pageX + 10) + 'px')
+                                .style('top', (event.pageY - 28) + 'px');
+                        })
+                        .on('mouseout', () => tooltip.style('opacity', 0));
+                } else if (chartType === 'pie') {
+                    const radius = Math.min(width, height) / 2;
+                    const color = d3.scaleOrdinal(d3.schemeCategory10);
+                    const arc = d3.arc().innerRadius(0).outerRadius(radius);
+                    const pie = d3.pie().value(d => d.count);
+
+                    const g = svg.append('g')
+                        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+                    const arcs = g.selectAll('.arc')
+                        .data(pie(data))
+                        .enter().append('g')
+                        .attr('class', 'arc');
+
+                    arcs.append('path')
+                        .attr('d', arc)
+                        .attr('class', 'pie-slice')
+                        .attr('fill', d => color(d.data.type))
+                        .on('mouseover', function(event, d) {
+                            tooltip.style('opacity', 1)
+                                .html(`<strong>${d.data.type}:</strong> ${d.data.count}개`)
+                                .style('left', (event.pageX + 10) + 'px')
+                                .style('top', (event.pageY - 28) + 'px');
+                        })
+                        .on('mouseout', () => tooltip.style('opacity', 0));
+
+                    arcs.append('text')
+                        .attr('transform', d => `translate(${arc.centroid(d)})`)
+                        .attr('text-anchor', 'middle')
+                        .text(d => d.data.count > 0 ? d.data.type : '')
+                        .style('fill', 'white');
+                }
+            };
+
+            renderChart('type-chart', typeChartData, 'pie', {xKey: 'type'});
+            renderChart('location-chart', locationChartData, 'bar', {xKey: 'location'});
         });
-    };
-</script>
-
+    </script>
 </body>
 </html>
